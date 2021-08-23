@@ -3,6 +3,7 @@ package br.com.pucgo.forumecec.controllers;
 import br.com.pucgo.forumecec.models.Course;
 import br.com.pucgo.forumecec.models.DTO.TopicDto;
 import br.com.pucgo.forumecec.models.DTO.TopicDtoDetails;
+import br.com.pucgo.forumecec.models.DTO.TopicFormUpdate;
 import br.com.pucgo.forumecec.models.Topic;
 import br.com.pucgo.forumecec.models.form.TopicForm;
 import br.com.pucgo.forumecec.repositories.CourseRepository;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.Arrays;
@@ -52,5 +54,14 @@ public class TopicsController {
     public TopicDtoDetails detail(@PathVariable("id") Long id) {
         Topic topic = topicRepository.getById(id);
         return new TopicDtoDetails(topic);
+    }
+
+    @PutMapping("/topics/{id}")
+    @Transactional
+    public ResponseEntity<TopicDto> update(@PathVariable Long id,
+                                           @RequestBody @Valid TopicFormUpdate topicForm) {
+            Topic topic = topicForm.update(id, topicRepository);
+
+            return ResponseEntity.ok(new TopicDto(topic));
     }
 }

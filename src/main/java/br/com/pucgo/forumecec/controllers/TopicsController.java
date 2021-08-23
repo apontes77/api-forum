@@ -18,6 +18,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class TopicsController {
@@ -41,6 +42,7 @@ public class TopicsController {
     }
 
     @PostMapping("/topics")
+    @Transactional
     public ResponseEntity<TopicDto> register(@RequestBody @Valid TopicForm topicForm,
                                              UriComponentsBuilder uriBuilder) {
         Topic topic = topicForm.convert(courseRepository);
@@ -51,17 +53,35 @@ public class TopicsController {
     }
 
     @GetMapping("/topics/{id}")
-    public TopicDtoDetails detail(@PathVariable("id") Long id) {
-        Topic topic = topicRepository.getById(id);
-        return new TopicDtoDetails(topic);
+    public ResponseEntity<TopicDtoDetails> detail(@PathVariable("id") Long id) {
+        Optional<Topic> topic = topicRepository.findById(id);
+        if(topic.isPresent()) {
+            return ResponseEntity.ok(new TopicDtoDetails(topic.get()));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/topics/{id}")
     @Transactional
     public ResponseEntity<TopicDto> update(@PathVariable Long id,
                                            @RequestBody @Valid TopicFormUpdate topicForm) {
+        Optional<Topic> topicOptional = topicRepository.findById(id);
+        if(topicOptional.isPresent()) {
             Topic topic = topicForm.update(id, topicRepository);
-
             return ResponseEntity.ok(new TopicDto(topic));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/topics/{id}")
+    @Transactional
+    public ResponseEntity delete(@PathVariable Long id) {
+        Optional<Topic> topicOptional = topicRepository.findById(id);
+        if(topicOptional.isPresent()) {
+            topicRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

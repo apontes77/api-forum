@@ -9,6 +9,9 @@ import br.com.pucgo.forumecec.models.form.TopicForm;
 import br.com.pucgo.forumecec.repositories.CourseRepository;
 import br.com.pucgo.forumecec.repositories.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/topics")
 public class TopicsController {
 
     @Autowired
@@ -29,19 +33,23 @@ public class TopicsController {
     @Autowired
     private CourseRepository courseRepository;
 
-    @GetMapping("/topics")
-    public List<TopicDto> list(String courseName) {
-        List<Topic> topics;
+    @GetMapping
+    public Page<TopicDto> list(@RequestParam(required = false) String courseName,
+                               @RequestParam int page,
+                               @RequestParam int quantity) {
+
+        Pageable pagination = PageRequest.of(page, quantity);
         if(courseName == null) {
-            topics = topicRepository.findAll();
+            final Page<Topic> topicPage = topicRepository.findAll(pagination);
+            return TopicDto.convert(topicPage);
         }
        else {
-            topics = topicRepository.findByCourse_Name(courseName);
+            final Page<Topic> topicPage = topicRepository.findByCourse_Name(courseName, pagination);
+            return TopicDto.convert(topicPage);
         }
-        return TopicDto.convert(topics);
     }
 
-    @PostMapping("/topics")
+    @PostMapping
     @Transactional
     public ResponseEntity<TopicDto> register(@RequestBody @Valid TopicForm topicForm,
                                              UriComponentsBuilder uriBuilder) {
@@ -52,7 +60,7 @@ public class TopicsController {
         return ResponseEntity.created(uri).body(new TopicDto(topic));
     }
 
-    @GetMapping("/topics/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<TopicDtoDetails> detail(@PathVariable("id") Long id) {
         Optional<Topic> topic = topicRepository.findById(id);
         if(topic.isPresent()) {
@@ -62,7 +70,7 @@ public class TopicsController {
         return ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/topics/{id}")
+    @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<TopicDto> update(@PathVariable Long id,
                                            @RequestBody @Valid TopicFormUpdate topicForm) {
@@ -74,7 +82,7 @@ public class TopicsController {
         return ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/topics/{id}")
+    @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity delete(@PathVariable Long id) {
         Optional<Topic> topicOptional = topicRepository.findById(id);

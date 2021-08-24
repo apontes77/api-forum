@@ -2,6 +2,7 @@ package br.com.pucgo.forumecec.models.DTO;
 
 import br.com.pucgo.forumecec.models.Topic;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,9 +23,7 @@ public class TopicDto {
         this.creationDate = topic.getCreationDate();
     }
 
-    public static List<TopicDto> convert(List<Topic> topics) {
-        return topics.stream()
-                        .map(TopicDto::new)
-                        .collect(Collectors.toList());
+    public static Page<TopicDto> convert(Page<Topic> topics) {
+        return topics.map(TopicDto::new);
     }
 }

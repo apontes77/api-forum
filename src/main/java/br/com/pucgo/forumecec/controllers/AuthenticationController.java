@@ -1,9 +1,8 @@
 package br.com.pucgo.forumecec.controllers;
 
 import br.com.pucgo.forumecec.config.security.TokenService;
+import br.com.pucgo.forumecec.models.DTO.TokenDto;
 import br.com.pucgo.forumecec.models.form.LoginForm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,8 +20,6 @@ import javax.validation.Valid;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
-
     @Autowired
     private AuthenticationManager authManager;
 
@@ -35,8 +32,7 @@ public class AuthenticationController {
         try {
             final Authentication authentication = authManager.authenticate(loginData);
             String token = tokenService.generateToken(authentication);
-            logger.info(token);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(new TokenDto(token, "Bearer"));
         } catch (AuthenticationException e) {
             return ResponseEntity.badRequest().build();
         }

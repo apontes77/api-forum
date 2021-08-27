@@ -24,7 +24,7 @@ public class TokenService {
         Date dateExpiration = new Date(today.getTime() + Long.parseLong(expiration));
 
         return Jwts.builder()
-                .setIssuer("API do fórum")
+                .setIssuer("API do forum")
                 .setSubject(logged.getId().toString())
                 .setIssuedAt(today)
                 .setExpiration(dateExpiration)

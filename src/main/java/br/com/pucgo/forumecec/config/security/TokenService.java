@@ -24,11 +24,25 @@ public class TokenService {
         Date dateExpiration = new Date(today.getTime() + Long.parseLong(expiration));
 
         return Jwts.builder()
-                .setIssuer("API do forum")
+                .setIssuer("API do fórum")
                 .setSubject(logged.getId().toString())
                 .setIssuedAt(today)
                 .setExpiration(dateExpiration)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
+    }
+
+    public boolean isValidToken(String token) {
+
+        try {
+//            Jwts.parserBuilder()
+//                    .setSigningKey(this.secret)
+//                    .build()
+//                    .parseClaimsJws(token);
+            Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

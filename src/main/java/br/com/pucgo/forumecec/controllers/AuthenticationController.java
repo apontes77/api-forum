@@ -23,6 +23,7 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationManager authManager;
 
+    @Autowired
     private TokenService tokenService;
 
     @PostMapping
@@ -32,6 +33,7 @@ public class AuthenticationController {
         try {
             final Authentication authentication = authManager.authenticate(loginData);
             String token = tokenService.generateToken(authentication);
+
             return ResponseEntity.ok(new TokenDto(token, "Bearer"));
         } catch (AuthenticationException e) {
             return ResponseEntity.badRequest().build();

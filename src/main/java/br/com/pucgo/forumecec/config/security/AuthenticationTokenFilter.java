@@ -1,5 +1,11 @@
 package br.com.pucgo.forumecec.config.security;
 
+import br.com.pucgo.forumecec.models.User;
+import br.com.pucgo.forumecec.repositories.UserRepository;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -11,9 +17,11 @@ import java.io.IOException;
 public class AuthenticationTokenFilter extends OncePerRequestFilter {
 
     private TokenService tokenService;
+    private UserRepository userRepository;
 
-    public AuthenticationTokenFilter(TokenService tokenService) {
+    public AuthenticationTokenFilter(TokenService tokenService, UserRepository userRepository) {
         this.tokenService = tokenService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -21,8 +29,18 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
         String token = retrieveToken(request);
 
         final boolean validToken = tokenService.isValidToken(token);
-        System.out.println(validToken);
+        if (validToken) {
+            authenticateClient(token);
+        }
         filterChain.doFilter(request, response);
+    }
+
+    private void authenticateClient(String token) {
+        Long id = tokenService.getUserId(token);
+        User user = userRepository.getById(id);
+        UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String retrieveToken(HttpServletRequest request) {
@@ -31,6 +49,6 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
             return null;
         }
 
-        return token.substring(7, token.length());
+        return token.split(" ")[1].trim();
     }
 }

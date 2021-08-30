@@ -65,11 +65,8 @@ public class TopicsController {
     @GetMapping("/{id}")
     public ResponseEntity<TopicDtoDetails> detail(@PathVariable("id") Long id) {
         Optional<Topic> topic = topicRepository.findById(id);
-        if(topic.isPresent()) {
-            return ResponseEntity.ok(new TopicDtoDetails(topic.get()));
-        }
-
-        return ResponseEntity.notFound().build();
+        return topic.map(value -> ResponseEntity.ok(new TopicDtoDetails(value)))
+                                    .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
@@ -88,7 +85,7 @@ public class TopicsController {
     @DeleteMapping("/{id}")
     @Transactional
     @CacheEvict(value = "topicsList", allEntries = true)
-    public ResponseEntity delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         Optional<Topic> topicOptional = topicRepository.findById(id);
         if(topicOptional.isPresent()) {
             topicRepository.deleteById(id);

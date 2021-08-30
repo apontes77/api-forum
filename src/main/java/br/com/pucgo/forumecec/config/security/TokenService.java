@@ -1,12 +1,17 @@
 package br.com.pucgo.forumecec.config.security;
 
 import br.com.pucgo.forumecec.models.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
 @Service
@@ -28,21 +33,26 @@ public class TokenService {
                 .setSubject(logged.getId().toString())
                 .setIssuedAt(today)
                 .setExpiration(dateExpiration)
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(SignatureAlgorithm.HS256, secret.getBytes(StandardCharsets.UTF_8))
                 .compact();
     }
 
     public boolean isValidToken(String token) {
 
         try {
-//            Jwts.parserBuilder()
-//                    .setSigningKey(this.secret)
-//                    .build()
-//                    .parseClaimsJws(token);
-            Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(this.secret)
+                    .build()
+                    .parseClaimsJws(token);
+            //Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Long getUserId(String token) {
+        final Claims body = Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token).getBody();
+         return Long.parseLong(body.getSubject());
     }
 }

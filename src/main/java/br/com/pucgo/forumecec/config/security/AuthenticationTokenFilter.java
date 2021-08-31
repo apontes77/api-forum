@@ -24,7 +24,7 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = retrieveToken(request);
+        final String token = retrieveToken(request);
 
         final boolean validToken = tokenService.isValidToken(token);
         if (validToken) {
@@ -34,15 +34,15 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
     }
 
     private void authenticateClient(String token) {
-        Long id = tokenService.getUserId(token);
-        User user = userRepository.findById(id).get();
-        UsernamePasswordAuthenticationToken authentication =
+        final Long id = tokenService.getUserId(token);
+        final User user = userRepository.findById(id).get();
+        final UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String retrieveToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
+        final String token = request.getHeader("Authorization");
         if (token == null || token.isEmpty() || !token.startsWith("Bearer ")) {
             return null;
         }

@@ -25,8 +25,8 @@ public class TokenService {
 
     public String generateToken(Authentication authentication) {
         final User logged = (User) authentication.getPrincipal();
-        Date today = new Date();
-        Date dateExpiration = new Date(today.getTime() + Long.parseLong(expiration));
+        final Date today = new Date();
+        final Date dateExpiration = new Date(today.getTime() + Long.parseLong(expiration));
 
         return Jwts.builder()
                 .setIssuer("API do fórum")

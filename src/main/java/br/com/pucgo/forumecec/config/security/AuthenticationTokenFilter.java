@@ -3,9 +3,7 @@ package br.com.pucgo.forumecec.config.security;
 import br.com.pucgo.forumecec.models.User;
 import br.com.pucgo.forumecec.repositories.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -16,8 +14,8 @@ import java.io.IOException;
 
 public class AuthenticationTokenFilter extends OncePerRequestFilter {
 
-    private TokenService tokenService;
-    private UserRepository userRepository;
+    private final TokenService tokenService;
+    private final UserRepository userRepository;
 
     public AuthenticationTokenFilter(TokenService tokenService, UserRepository userRepository) {
         this.tokenService = tokenService;
@@ -37,15 +35,15 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
 
     private void authenticateClient(String token) {
         Long id = tokenService.getUserId(token);
-        User user = userRepository.getById(id);
+        User user = userRepository.findById(id).get();
         UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String retrieveToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if(token == null || token.isEmpty() || !token.startsWith("Bearer ")) {
+        if (token == null || token.isEmpty() || !token.startsWith("Bearer ")) {
             return null;
         }
 

@@ -44,7 +44,6 @@ public class TokenService {
                     .setSigningKey(this.secret)
                     .build()
                     .parseClaimsJws(token);
-            //Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -52,7 +51,10 @@ public class TokenService {
     }
 
     public Long getUserId(String token) {
-        final Claims body = Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token).getBody();
+        final Claims body = Jwts.parserBuilder()
+                                .setSigningKey(this.secret)
+                                .build()
+                                .parseClaimsJws(token).getBody();
          return Long.parseLong(body.getSubject());
     }
 }
